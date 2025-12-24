@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Job Detail{% endblock %}
+
+{% block content %}
+<h1>Job: {{ job.url }}</h1>
+<p>Status: {{ job.status }}</p>
+<p>Created: {{ job.created_at }}</p>
+
+{% if job.result %}
+<h2>Result</h2>
+<p><strong>Content:</strong></p>
+<pre>{{ job.result.content }}</pre>
+<p><strong>Technologies:</strong> {{ job.result.technologies }}</p>
+{% if job.result.zip_file %}
+<p><a href="{{ job.result.zip_file.url }}" class="btn btn-success">Download ZIP</a></p>
+{% endif %}
+{% else %}
+<p>Result not available yet.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - GOharveST{% endblock %}
+
+{% block content %}
+<h1>Welcome to GOharveST</h1>
+<p>Harvest public web content and frontend code intelligence.</p>
+
+<h2>Recent Jobs</h2>
+<ul class="list-group">
+    {% for job in jobs %}
+    <li class="list-group-item">
+        <a href="{% url 'job_detail' job.id %}">{{ job.url }}</a> - {{ job.status }}
+    </li>
+    {% empty %}
+    <li class="list-group-item">No jobs yet.</li>
+    {% endfor %}
+</ul>
+
+<h2>Start New Harvest</h2>
+<form method="post" action="{% url 'api:harvests-list' %}">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="url" class="form-label">URL</label>
+        <input type="url" class="form-control" id="url" name="url" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Harvest</button>
+</form>
+{% endblock %}
