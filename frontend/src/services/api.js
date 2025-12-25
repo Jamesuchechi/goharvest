@@ -1,46 +1,45 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import axios from 'axios';
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Request failed: ${response.status}`);
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  if (response.status === 204) {
-    return null;
-  }
+export const jobsAPI = {
+  list: (params) => api.get('/jobs/', { params }),
+  get: (id) => api.get(`/jobs/${id}/`),
+  create: (data) => api.post('/jobs/', data),
+  delete: (id) => api.delete(`/jobs/${id}/`),
+  retry: (id) => api.post(`/jobs/${id}/retry/`),
+  cancel: (id) => api.post(`/jobs/${id}/cancel/`),
+  getResult: (id) => api.get(`/jobs/${id}/result/`),
+  download: (id) => api.get(`/jobs/${id}/download/`),
+  batch: (data) => api.post('/jobs/batch/', data),
+  statistics: () => api.get('/jobs/statistics/'),
+};
 
-  return response.json();
-}
+export const resultsAPI = {
+  list: (params) => api.get('/results/', { params }),
+  get: (id) => api.get(`/results/${id}/`),
+  export: (id, format) => api.get(`/results/${id}/export/`, { params: { format } }),
+  search: (tech) => api.get('/results/search/', { params: { tech } }),
+  compare: (id1, id2) => api.post(`/results/${id1}/compare/`, { compare_with: id2 }),
+};
 
-export async function fetchJobs() {
-  const data = await request('/api/jobs/');
-  return Array.isArray(data) ? data : data.results || [];
-}
+export const techAPI = {
+  detect: (url) => api.post('/tech-detect/', { url }),
+};
 
-export async function createJob(payload) {
-  return request('/api/harvest/', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function fetchJob(id) {
-  return request(`/api/jobs/${id}/`);
-}
-
-export async function fetchResult(id) {
-  return request(`/api/jobs/${id}/result/`);
-}
-
-export async function techDetect(url) {
-  return request(`/api/tech-detect/?url=${encodeURIComponent(url)}`);
-}
+export default api;
