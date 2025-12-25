@@ -1,14 +1,16 @@
 import { NavLink } from 'react-router-dom';
 
 const links = [
-  { label: 'Dashboard', to: '/' },
-  { label: 'Jobs', to: '/jobs' },
-  { label: 'Results', to: '/results' },
-  { label: 'Batch', to: '/batch' },
-  { label: 'Visual Inspector', to: '/visual/preview' },
-  { label: 'Comparison', to: '/compare' },
-  { label: 'Components', to: '/components' },
-  { label: 'Docs', to: '/docs' },
+  { label: 'Dashboard', to: '/app' },
+  { label: 'Jobs', to: '/app/jobs' },
+  { label: 'Results', to: '/app/results' },
+  { label: 'Batch', to: '/app/batch' },
+  { label: 'Visual Inspector', to: '/app/visual/preview' },
+  { label: 'Comparison', to: '/app/compare' },
+  { label: 'Components', to: '/app/components' },
+  { label: 'Analytics', to: '/app/analytics' },
+  { label: 'Profile', to: '/app/profile' },
+  { label: 'Docs', to: '/app/docs' },
 ];
 
 export default function Sidebar() {

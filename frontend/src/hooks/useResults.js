@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { resultsAPI } from '../services/api.js';
 
 export function useResults(params = {}) {
+  const paramsKey = useMemo(() => JSON.stringify(params), [params]);
+  const stableParams = useMemo(() => params, [paramsKey]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,7 +11,7 @@ export function useResults(params = {}) {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await resultsAPI.list(params);
+      const response = await resultsAPI.list(stableParams);
       const data = response.data?.results || response.data || [];
       setResults(data);
       setError(null);
@@ -18,7 +20,7 @@ export function useResults(params = {}) {
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [stableParams]);
 
   useEffect(() => {
     refresh();

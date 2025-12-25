@@ -152,7 +152,7 @@ class HarvestJobSerializer(serializers.ModelSerializer):
 
     def get_result(self, obj):
         if hasattr(obj, 'result'):
-            return HarvestResultSerializer(obj.result, context=self.context).data
+            return HarvestResultSummarySerializer(obj.result, context=self.context).data
         return None
 
 
@@ -172,8 +172,34 @@ class HarvestJobCreateSerializer(serializers.ModelSerializer):
         ]
 
 
+class HarvestResultSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HarvestResult
+        fields = [
+            'id',
+            'total_assets',
+            'total_size',
+            'technologies',
+            'frontend_framework',
+            'css_framework',
+            'created_at',
+        ]
+
+
+class HarvestJobSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HarvestJob
+        fields = [
+            'id',
+            'url',
+            'status',
+            'created_at',
+            'completed_at',
+        ]
+
+
 class HarvestResultSerializer(serializers.ModelSerializer):
-    job = HarvestJobSerializer(read_only=True)
+    job = HarvestJobSummarySerializer(read_only=True)
     asset_details = AssetSerializer(many=True, read_only=True)
     ai_analysis = AIAnalysisSerializer(read_only=True)
     performance = PerformanceMetricsSerializer(read_only=True)

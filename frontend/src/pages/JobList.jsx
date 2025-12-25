@@ -16,7 +16,7 @@ export default function JobList() {
           <h2>All Harvest Jobs</h2>
           <BulkActions />
         </div>
-        {loading ? <p>Loading jobs...</p> : <JobTable jobs={jobs} onSelect={(job) => navigate(`/jobs/${job.id}`)} />}
+        {loading ? <p>Loading jobs...</p> : <JobTable jobs={jobs} onSelect={(job) => navigate(`/app/jobs/${job.id}`)} />}
       </div>
     </div>
   );

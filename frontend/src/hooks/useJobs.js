@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { jobsAPI } from '../services/api.js';
 
 export function useJobs(params = {}) {
+  const paramsKey = useMemo(() => JSON.stringify(params), [params]);
+  const stableParams = useMemo(() => params, [paramsKey]);
   const [jobs, setJobs] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,7 @@ export function useJobs(params = {}) {
     setLoading(true);
     try {
       const [jobsResponse, statsResponse] = await Promise.all([
-        jobsAPI.list(params),
+        jobsAPI.list(stableParams),
         jobsAPI.statistics(),
       ]);
       const jobsData = jobsResponse.data?.results || jobsResponse.data || [];
@@ -23,7 +25,7 @@ export function useJobs(params = {}) {
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [stableParams]);
 
   useEffect(() => {
     refresh();

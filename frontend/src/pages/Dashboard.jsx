@@ -32,7 +32,7 @@ export default function Dashboard() {
           <h2>Recent Harvests</h2>
           {isConnected && <span className="status-pill">Live</span>}
         </div>
-        <RecentJobs jobs={jobs} loading={loading} onSelect={(job) => navigate(`/jobs/${job.id}`)} />
+        <RecentJobs jobs={jobs} loading={loading} onSelect={(job) => navigate(`/app/jobs/${job.id}`)} />
       </div>
       <QuickActions />
     </div>
