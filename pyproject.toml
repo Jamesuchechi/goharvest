@@ -1,0 +1,5 @@
+[project]
+name = "goharvest"
+version = "0.1.0"
+description = "Public web frontend harvester"
+requires-python = ">=3.10"

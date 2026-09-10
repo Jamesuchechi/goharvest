@@ -16,6 +16,7 @@ from .utils.ai_analyzer import AIAnalyzer
 from .utils.asset_downloader import AssetDownloader
 from .utils.performance_analyzer import PerformanceAnalyzer
 from .utils.scraper import WebScraper
+from .utils.snapshot import build_zip, rewrite_html
 from .utils.tech_detector import TechnologyDetector
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ def harvest_website(self, job_id):
         tech_detector = TechnologyDetector(job.url, scraped_data.get('html', ''))
         technologies = tech_detector.detect()
 
-        asset_downloader = AssetDownloader(job.url, scraped_data.get('assets', []))
+        asset_downloader = AssetDownloader(job.url, scraped_data.get('assets', []), str(job.id))
         downloaded_assets = asyncio.run(asset_downloader.download())
 
         html = scraped_data.get('html', '')
@@ -60,24 +61,31 @@ def harvest_website(self, job_id):
             total_size=sum(asset.get('size', 0) for asset in downloaded_assets),
         )
 
+        url_map = {
+            asset_data['url']: asset_data['rel_path']
+            for asset_data in downloaded_assets
+            if asset_data.get('status') == 'success' and asset_data.get('rel_path')
+        }
+        rewritten = rewrite_html(html, url_map)
+        result.html = rewritten
+        result.save(update_fields=['html'])
+
         for asset_data in downloaded_assets:
             if asset_data.get('status') != 'success':
                 continue
-            file_name = asset_data.get('file_path', '')
-            if file_name.startswith('media/'):
-                file_name = file_name.split('media/', 1)[1]
+            rel = asset_data.get('rel_path') or ''
             Asset.objects.create(
                 result=result,
                 url=asset_data['url'],
                 asset_type=asset_data['type'],
                 file_size=asset_data.get('size', 0),
-                file_path=file_name,
+                file_path=rel,
                 is_critical=asset_data.get('is_critical', False),
             )
+        build_zip(result, downloaded_assets, rewritten)
 
         analyze_performance.delay(result.id)
         perform_ai_analysis.delay(result.id)
-        create_zip_export.delay(result.id)
 
         job.status = 'completed'
         job.completed_at = timezone.now()
@@ -154,8 +162,15 @@ def perform_ai_analysis(result_id):
 @shared_task
 def create_zip_export(result_id):
     result = HarvestResult.objects.get(id=result_id)
-    _ = result
-    return None
+    assets = result.assets if isinstance(result.assets, list) else []
+    url_map = {
+        item['url']: item['rel_path']
+        for item in assets
+        if item.get('status') == 'success' and item.get('rel_path')
+    }
+    rewritten = rewrite_html(result.html, url_map)
+    build_zip(result, assets, rewritten)
+    return {'result_id': result_id, 'zip': bool(result.zip_file)}
 
 
 @shared_task

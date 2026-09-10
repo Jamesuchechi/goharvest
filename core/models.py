@@ -28,16 +28,16 @@ class HarvestJob(models.Model):
     scheduled_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    options = models.JSONField(default=dict)  # {'mode': 'full', 'depth': 2, 'extract_media': True}
+    options = models.JSONField(default=dict)
     priority = models.IntegerField(choices=PRIORITY_CHOICES, default=5)
     retry_count = models.IntegerField(default=0)
     max_retries = models.IntegerField(default=3)
     error_message = models.TextField(blank=True)
-    tags = models.JSONField(default=list)  # ['competitor-research', 'react']
+    tags = models.JSONField(default=list)
     notes = models.TextField(blank=True)
     estimated_duration = models.DurationField(null=True, blank=True)
     is_recurring = models.BooleanField(default=False)
-    cron_schedule = models.CharField(max_length=100, blank=True)  # '0 0 * * *'
+    cron_schedule = models.CharField(max_length=100, blank=True)
     parent_job = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
@@ -188,8 +188,8 @@ class HarvestAuditLog(models.Model):
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    user_ip = models.GenericIPAddressField()
-    user_agent = models.TextField()
+    user_ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
     details = models.JSONField(default=dict)
 
     class Meta:
